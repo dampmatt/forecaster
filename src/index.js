@@ -1,18 +1,18 @@
 import "./styles.css";
+import { weatherDetails } from "./dateClass";
 
 const events = (() => {
   //variable names
   //non html elements
   const api_token = "AKKUHWXN245EQX7F3Z94A5LWV";
   var city_name = "delhi";
-  var weather = "";
   var todayDate;
   var endDate;
+  var dayName;
 
+  fetchWeather();
   //html elements
   const $text_input = document.querySelector("input");
-  const $currentDay_placard = document.querySelector("#selected");
-  const $otherDays_placard = document.querySelectorAll(".other-days");
   const $search_btn = document.querySelector("button");
 
   $search_btn.addEventListener("click", getLocation);
@@ -34,7 +34,95 @@ const events = (() => {
     endDate = `${endYear}-${endMonth}-${endDay}`;
   }
 
-  function convertData(json) {}
+  function renderToday(details) {
+    var div = document.querySelector("#day1");
+    div.innerHTML = "";
+    var childDiv = document.createElement("div");
+    var siblingDiv = document.createElement("div");
+    div.classList.add("today-components", "weather-details");
+    childDiv.classList.add("location-details");
+    childDiv.innerHTML = `
+    <h1 id="location-currentDay">${details.address}</h1>
+    <h2 id="time-currentDay">${details.time}, ${details.date
+      .split("-")
+      .reverse()
+      .join("-")}</h2>
+    `;
+    siblingDiv.innerHTML = `
+    <h3 id="day1-condition">${details.conditions}</h3>
+    <h3 id="day1-temp">Temperature:${details.temp}F</h3>
+    <h3 id="day1-wind">Wind Speed:${details.windSpeed}</h3>
+    `;
+
+    div.appendChild(childDiv);
+    div.appendChild(siblingDiv);
+
+    var iconDIv = document.querySelector("#day1-icon");
+    iconDIv.innerHTML = `
+    <img
+      src="https://raw.githubusercontent.com/visualcrossing/WeatherIcons/refs/heads/main/SVG/1st%20Set%20-%20Color/${details.iconName}.svg"
+      alt="Weather Icon"
+    />
+    `;
+  }
+
+  function renderOtherDays(details) {
+    var div_Array = Array.from(document.querySelectorAll(".other-days"));
+    for (var i = 1; i < details.length; i++) {
+      console.log("x");
+      div_Array[i - 1].innerHTML = "";
+      var childDiv = document.createElement("div");
+      var siblingDiv = document.createElement("div");
+      var siblingDiv2 = document.createElement("div");
+
+      childDiv.classList.add("today-components", "weather-icon");
+      siblingDiv.classList.add("location-details");
+      siblingDiv2.classList.add("weather-stats");
+      childDiv.innerHTML = `
+      <img
+        src="https://raw.githubusercontent.com/visualcrossing/WeatherIcons/refs/heads/main/SVG/1st%20Set%20-%20Color/${details[i].iconName}.svg"
+        alt="Weather Icon"
+      />
+      `;
+      siblingDiv.innerHTML = `
+      <h3 id="day2-date">${details[i].date.split("-").reverse().join("-")}</h3>
+      `;
+      siblingDiv2.innerHTML = `
+      <h3 id="day1-condition">${details[i].conditions}</h3>
+      <h3 id="day1-temp">Temperature:${details[i].temp}F</h3>
+      <h3 id="day1-wind">Wind Speed:${details[i].windSpeed}</h3>
+      `;
+      div_Array[i - 1].appendChild(childDiv);
+      div_Array[i - 1].appendChild(siblingDiv);
+      div_Array[i - 1].appendChild(siblingDiv2);
+    }
+  }
+
+  function convertData(json) {
+    // console.log(json);
+    var otherDays = [],
+      temp;
+
+    // icon = json.currentConditions.icon;
+    json.days.map((element) => {
+      dayName = new Date(element.datetime).toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      temp = new weatherDetails(
+        element.windspeed,
+        element.temp,
+        json.currentConditions.datetime,
+        element.datetime,
+        json.resolvedAddress,
+        element.conditions,
+        element.icon,
+        dayName
+      );
+      otherDays.push(temp);
+    });
+    renderToday(otherDays[0]);
+    renderOtherDays(otherDays);
+  }
 
   async function fetchWeather() {
     getTodayDate();

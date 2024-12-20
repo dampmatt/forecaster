@@ -94,3 +94,7 @@ button {
   }
   justify-content: space-around;
 }
+
+.weather-stats {
+  text-align: center;
+}
